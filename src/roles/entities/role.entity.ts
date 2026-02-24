@@ -1,26 +1,26 @@
 import { User } from 'src/users/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('Roles')
 export class Role {
 
   @PrimaryGeneratedColumn()
-  id: number;
+  Id: number;
 
   @Column({ type: 'nvarchar', length: 50, unique: true })
-  code: string;
+  Code: string;
 
   @Column({ type: 'nvarchar', length: 150 })
-  name: string;
+  Name: string; 
 
   @Column({ type: 'nvarchar', length: 255, nullable: true })
-  description: string;
+  Description: string;
 
   @Column({ type: 'bit', default: true }) 
-  isActive: boolean;
+  IsActive: boolean;
 
   @CreateDateColumn({ type: 'datetime' })
-  createdAt: Date;
+  CreatedAt: Date;
 
   // Quan hệ 1 Role - nhiều User
   @OneToMany(() => User, user => user.role)
