@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-
+import { DocumentsModule } from './documents/documents.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { DocumentHistoryModule } from './document-history/document-history.module';
 @Module({
   imports: [
     ConfigModule.forRoot(), // Loads .env variables
@@ -16,7 +20,7 @@ import { ConfigModule } from '@nestjs/config';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       autoLoadEntities: true,
-      synchronize: true, // Set to false in production
+      synchronize: false, // Set to false in production
       extra: {
         options: {
           encrypt: false,
@@ -25,8 +29,7 @@ import { ConfigModule } from '@nestjs/config';
       },
       logging: true, // Log mọi truy vấn SQL ra console
       logger: 'advanced-console',
-    }),
-    UserModule,
+    }), DocumentsModule, UsersModule, AuthModule, RolesModule, PermissionsModule, DocumentHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
