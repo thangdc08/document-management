@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Permission } from './entities/permission.entity';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
@@ -26,9 +26,7 @@ export class PermissionsRepository {
     });
   }
 
-  async createPermission(
-    dto: CreatePermissionDto,
-  ): Promise<Permission> {
+  async createPermission(dto: CreatePermissionDto): Promise<Permission> {
     const permission = this.repository.create(dto);
     return await this.repository.save(permission);
   }
@@ -44,4 +42,11 @@ export class PermissionsRepository {
   async deletePermission(id: number): Promise<void> {
     await this.repository.delete({ Id: id });
   }
+
+  async findListPermission(filter: { id: number[] }): Promise<Permission[]> {
+    return this.repository.findBy({
+      Id: In(filter.id),
+    });
+  }
 }
+

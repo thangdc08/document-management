@@ -1,5 +1,6 @@
 import { User } from 'src/users/entities/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { RolePermission } from './role-permission.entity';
 
 @Entity('Roles')
 export class Role {
@@ -25,4 +26,7 @@ export class Role {
   // Quan hệ 1 Role - nhiều User
   @OneToMany(() => User, user => user.role)
   users: User[];
+
+  @OneToMany(() => RolePermission, rp => rp.role)
+  rolePermissions: RolePermission[];
 }

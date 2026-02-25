@@ -5,12 +5,12 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
-  ParseIntPipe,
+  Delete
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { AssignPermissionsDto } from './dto/AssignPermissionsDto';
 
 @Controller('roles')
 export class RolesController {
@@ -42,7 +42,16 @@ export class RolesController {
   }
 
   @Patch(':id/deactivate')
-  deactivate(@Param('id', ParseIntPipe) id: number) {
-    return this.rolesService.softDelete(id);
+  deactivate(@Param('id') id: number) {
+    return this.rolesService.softDelete(+id);
+  }
+
+  // Gán quyền cho vai trò
+  @Patch(':id/permissions')
+  assignPermissions(
+    @Param('id') id: number,
+    @Body() permissionIds: AssignPermissionsDto,
+  ) {
+    return this.rolesService.assignPermissions(+id, permissionIds.permissionIds);
   }
 }

@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { RolePermission } from './entities/role-permission.entity';
 
 @Injectable()
 export class RolesRepository {
   constructor(
     @InjectRepository(Role)
     private readonly repository: Repository<Role>,
+    @InjectRepository(RolePermission)
+    private readonly rolePermissionRepository: Repository<RolePermission>,
   ) {}
 
   async findByCode(code: string): Promise<Role | null> {
@@ -55,4 +58,31 @@ export class RolesRepository {
     return await this.repository.save(role);
   }
 
+  async findRolePermissions(roleId: number): Promise<RolePermission[]> {
+    return await this.rolePermissionRepository.find({
+      where: { RoleId: roleId },
+    });
+  }
+
+  async findRoleWithPermissions(id: number) {
+    const role = await this.repository.findOne({
+      where: { Id: id },
+      relations: {
+        rolePermissions: {
+          permission: true,
+        },
+      },
+    });
+
+    if (!role) return null;
+
+    return {
+      Id: role.Id,
+      Code: role.Code,
+      Name: role.Name,
+      Description: role.Description,
+      IsActive: role.IsActive,
+      permissions: role.rolePermissions.map((rp) => rp.permission),
+    };
+  }
 }
