@@ -5,30 +5,30 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDa
 export class User {
 
   @PrimaryGeneratedColumn()
-  id: number;
+  Id: number;
 
   @Column({ type: 'nvarchar', length: 100, unique: true })
-  username: string;
+  Username: string;
 
   @Column({ type: 'nvarchar', length: 255 })
-  passwordHash: string;
+  PasswordHash: string;
 
   @Column({ type: 'nvarchar', length: 150 })
-  fullName: string;
+  FullName: string;
 
   @Column({ type: 'nvarchar', length: 150, nullable: true })
-  email: string;
+  Email: string;
 
   @Column()
-  roleId: number;
+  RoleId: number;
 
   @ManyToOne(() => Role, role => role.users)
   @JoinColumn({ name: 'RoleId' })
   role: Role;
 
   @Column({ type: 'bit', default: true })
-  isActive: boolean;
+  IsActive: boolean;
 
   @CreateDateColumn({ type: 'datetime' })
-  createdAt: Date;
+  CreatedAt: Date;
 }
