@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // Cấu hình ValidationPipe
@@ -11,6 +13,8 @@ async function bootstrap() {
       transform: true, // Tự động convert kiểu dữ liệu (ví dụ: string sang number)
     }),
   );
+  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalFilters(new GlobalExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
