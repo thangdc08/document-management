@@ -14,6 +14,7 @@ import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentActionDto } from './dto/document-action.dto';
+import { PaginationDto } from 'src/common/dto/pagination-query.dto';
 
 @Controller('documents')
 export class DocumentsController {
@@ -25,8 +26,8 @@ export class DocumentsController {
   }
 
   @Get()
-  findAll() {
-    return this.documentsService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.documentsService.findAll(paginationDto);
   }
 
   @Get(':id')

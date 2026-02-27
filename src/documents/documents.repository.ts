@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Document } from './entities/document.entity';
 import { DocumentStatus } from './enums/document-status.enum';
 import { DocumentHistory } from 'src/document-history/entities/document-history.entity';
+import { PaginationDto } from 'src/common/dto/pagination-query.dto';
 
 @Injectable()
 export class DocumentRepository {
@@ -14,10 +15,18 @@ export class DocumentRepository {
     private readonly documentHistoryRepository: Repository<DocumentHistory>,
   ) {}
 
-  async findAllWithUsers(): Promise<Document[]> {
-    return this.repo.find({
+  async findAllWithUsers(
+    paginationDto: PaginationDto,
+  ): Promise<{ data: Document[]; total: number }> {
+    const { page, limit } = paginationDto;
+
+    const [documents, total] = await this.repo.findAndCount({
       relations: ['CreatedByUser', 'AssignedToUser'],
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    return { data: documents, total };
   }
 
   async findOneWithUsers(id: number): Promise<Document | null> {

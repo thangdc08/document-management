@@ -4,7 +4,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger:
+      process.env.NODE_ENV === 'production'
+        ? ['error', 'warn']
+        : ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
   // Cấu hình ValidationPipe
   app.useGlobalPipes(
     new ValidationPipe({

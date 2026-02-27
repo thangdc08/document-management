@@ -10,10 +10,11 @@ import { Document } from './entities/document.entity';
 import { UsersRepository } from 'src/users/users.repository';
 import { DocumentAction } from './enums/document-action.enum';
 import { DocumentHistory } from 'src/document-history/entities/document-history.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { DocumentWorkflow } from './workflow/document-workflow.util';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentStatus } from './enums/document-status.enum';
+import { PaginationDto } from 'src/common/dto/pagination-query.dto';
 
 @Injectable()
 export class DocumentsService {
@@ -63,8 +64,21 @@ export class DocumentsService {
     return await this.documentRepository.save(document);
   }
 
-  async findAll(): Promise<Document[]> {
-    return await this.documentRepository.findAllWithUsers();
+  async findAll(paginationDto: PaginationDto) {
+    const { page, limit } = paginationDto;
+
+    const { data, total } =
+      await this.documentRepository.findAllWithUsers(paginationDto);
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: number): Promise<Document> {

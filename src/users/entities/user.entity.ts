@@ -10,7 +10,7 @@ export class User {
   @Column({ type: 'nvarchar', length: 100, unique: true })
   Username: string;
 
-  @Column({ type: 'nvarchar', length: 255 })
+  @Column({ type: 'nvarchar', length: 255, select: false })
   PasswordHash: string;
 
   @Column({ type: 'nvarchar', length: 150 })
