@@ -1,5 +1,12 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
-import { AppException } from "../exceptions/app.exception";
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+import { AppException } from '../exceptions/app.exception';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -26,11 +33,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       if (typeof res === 'object') {
         message = res['message'] || message;
+    
         errors = Array.isArray(res['message']) ? res['message'] : null;
+
+        errorCode = res['error']
+          ? res['error'].toUpperCase().replace(' ', '_')
+          : HttpStatus[status];
       } else {
         message = res;
+        errorCode = HttpStatus[status];
       }
-    } else{
+    } else {
       this.logger.error(exception);
     }
 

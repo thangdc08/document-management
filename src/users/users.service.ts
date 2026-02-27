@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
+import { UserMapper } from './user.mapper';
 
 @Injectable()
 export class UsersService {
@@ -42,7 +43,8 @@ export class UsersService {
       RoleId,
     };
 
-    return await this.usersRepository.create(newUser as any);
+    const user = UserMapper.toResponse(await this.usersRepository.create(newUser as any));
+    return user;
   }
 
   async findAll() {

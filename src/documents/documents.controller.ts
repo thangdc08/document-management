@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  Req,
   ParseIntPipe,
   Query,
 } from '@nestjs/common';

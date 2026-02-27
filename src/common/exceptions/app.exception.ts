@@ -7,13 +7,6 @@ export class AppException extends HttpException {
     status: HttpStatus,
     public readonly errors?: any,
   ) {
-    super(
-      {
-        errorCode,
-        message,
-        errors: errors || null,
-      },
-      status,
-    );
+    super({errorCode, message, errors: errors || null,}, status);
   }
 }
