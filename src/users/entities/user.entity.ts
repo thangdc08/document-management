@@ -1,6 +1,6 @@
+import { Document } from 'src/documents/entities/document.entity';
 import { Role } from 'src/roles/entities/role.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany } from 'typeorm';
 @Entity('Users')
 export class User {
 
@@ -31,4 +31,10 @@ export class User {
 
   @CreateDateColumn({ type: 'datetime' })
   CreatedAt: Date;
+
+  @OneToMany(() => Document, document => document.CreatedByUser)
+  createdDocuments: Document[];
+
+  @OneToMany(() => Document, document => document.AssignedToUser)
+  assignedDocuments: Document[];
 }

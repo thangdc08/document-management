@@ -31,7 +31,7 @@ export class UsersService {
     }
 
     //Mã hóa mật khẩu trước khi lưu vào DB
-    const saltRounds = 10;
+    const saltRounds = process.env.BCRYPT_SALT_ROUNDS ? parseInt(process.env.BCRYPT_SALT_ROUNDS) : 10;
     const hashedPassword = await bcrypt.hash(PasswordHash, saltRounds);
 
     const newUser = {
@@ -78,7 +78,7 @@ export class UsersService {
     }
 
     if(updateUserDto.PasswordHash) {
-      const saltRounds = 10;
+      const saltRounds = process.env.BCRYPT_SALT_ROUNDS ? parseInt(process.env.BCRYPT_SALT_ROUNDS) : 10;
       updateUserDto.PasswordHash = await bcrypt.hash(updateUserDto.PasswordHash, saltRounds);
     }
 
