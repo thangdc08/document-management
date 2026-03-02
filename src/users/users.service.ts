@@ -43,12 +43,13 @@ export class UsersService {
       RoleId,
     };
 
-    const user = UserMapper.toResponse(await this.usersRepository.create(newUser as any));
+    const user = UserMapper.toResponse(await this.usersRepository.create(newUser));
     return user;
   }
 
   async findAll() {
-    return await this.usersRepository.findAll();
+    const users = await this.usersRepository.findAll();
+    return users.map(user => UserMapper.toResponse(user));
   }
 
   async findOne(id: number) {
