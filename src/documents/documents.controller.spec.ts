@@ -5,10 +5,21 @@ import { DocumentsService } from './documents.service';
 describe('DocumentsController', () => {
   let controller: DocumentsController;
 
+  const mockDocumentsService = {
+    findAll: jest.fn(),
+    create: jest.fn(),
+    remove: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DocumentsController],
-      providers: [DocumentsService],
+      providers: [
+        {
+          provide: DocumentsService,
+          useValue: mockDocumentsService,
+        },
+      ],
     }).compile();
 
     controller = module.get<DocumentsController>(DocumentsController);

@@ -124,7 +124,7 @@ describe('RolesService', () => {
 
       const result = await service.softDelete(1);
 
-      expect(result).toEqual({ message: 'Role soft deleted successfully' });
+      expect(result).toEqual({ message: 'Role deactivated successfully' });
     });
   });
 
@@ -162,7 +162,7 @@ describe('RolesService', () => {
 
       const result = await service.remove(1);
 
-      expect(result).toEqual({ message: 'Role deleted successfully' });
+      expect(result).toEqual({ message: 'Role deleted successfully'});
       expect(rolesRepository.deleteRole).toHaveBeenCalledWith(1);
     });
   });
