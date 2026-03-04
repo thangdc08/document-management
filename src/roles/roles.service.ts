@@ -123,6 +123,10 @@ export class RolesService {
 
     const role = await this.rolesRepository.findRoleWithPermissions(roleId);
 
+    if (!role) {
+      throw new NotFoundException('Role not found after update');
+    }
+
     return role;
   }
 }
