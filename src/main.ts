@@ -3,12 +3,12 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { WinstonModule } from 'nest-winston';
+import { loggerConfig } from './common/configs/logger.config';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger:
-      process.env.NODE_ENV === 'production'
-        ? ['error', 'warn']
-        : ['error', 'warn', 'log', 'debug', 'verbose'],
+    logger: WinstonModule.createLogger(loggerConfig),
   });
   // Cấu hình ValidationPipe
   app.useGlobalPipes(

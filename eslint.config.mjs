@@ -1,42 +1,64 @@
 // @ts-check
+
 import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import globals from 'globals';
+import prettier from 'eslint-plugin-prettier/recommended';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: ['dist', 'node_modules'],
   },
+
+  // Base JS rules
   eslint.configs.recommended,
+
+  // TypeScript rules
   ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
+
   {
     languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
     },
   },
+
   {
     rules: {
-      "no-unused-vars": "off",
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      'prettier/prettier': 'off',
-      '@typescript-eslint/no-unused-vars': ['error'],
-      '@typescript-eslint/no-unsafe-assignment':'off',
+      /*
+       * General
+       */
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+
+      /*
+       * TypeScript safety
+       */
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/unbound-method': 'error',
+
+      /*
+       * Unsafe rules (tùy project)
+       */
+      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call':'off',
-      '@typescript-eslint/no-unsafe-return':'off',
-      '@typescript-eslint/unbound-method': 'error'
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+
+      /*
+       * Async
+       */
+      'require-await': 'off',
+      '@typescript-eslint/require-await': 'off',
     },
   },
 );

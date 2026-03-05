@@ -4,10 +4,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
 import { UserMapper } from './user.mapper';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  private readonly logger = new Logger(UsersService.name);
+  constructor(private readonly usersRepository: UsersRepository) { }
 
   async create(createUserDto: CreateUserDto) {
     const { Username, Email, PasswordHash, RoleId, ...otherInfo } = createUserDto;
@@ -61,7 +63,7 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    if(updateUserDto.RoleId) {
+    if (updateUserDto.RoleId) {
       const existingRole = await this.usersRepository.findOneByRoleId(updateUserDto.RoleId);
       if (!existingRole) {
         throw new ConflictException('Vai trò không tồn tại');
@@ -73,14 +75,14 @@ export class UsersService {
       throw new BadRequestException('Người dùng không tồn tại');
     }
 
-    if(updateUserDto.Email) {
+    if (updateUserDto.Email) {
       const existingEmail = await this.usersRepository.findOneByEmail(updateUserDto.Email);
       if (existingEmail && existingEmail.Id !== id) {
         throw new ConflictException('Email đã tồn tại');
       }
     }
 
-    if(updateUserDto.PasswordHash) {
+    if (updateUserDto.PasswordHash) {
       const saltRounds = process.env.BCRYPT_SALT_ROUNDS ? parseInt(process.env.BCRYPT_SALT_ROUNDS) : 10;
       updateUserDto.PasswordHash = await bcrypt.hash(updateUserDto.PasswordHash, saltRounds);
     }
@@ -94,6 +96,10 @@ export class UsersService {
       throw new BadRequestException('Người dùng không tồn tại');
     }
     return await this.usersRepository.remove(id);
+  }
 
+  async findOneByUserName(username: string) {
+    this.logger.log(username);
+    return await this.usersRepository.findOneByUsername(username);
   }
 }

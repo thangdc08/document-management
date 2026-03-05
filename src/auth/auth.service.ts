@@ -1,26 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { UsersService } from 'src/users/users.service';
+import { comparePasswordHelper } from './helpers/util';
+import { JwtService } from '@nestjs/jwt';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  private readonly logger = new Logger(AuthService.name);
+  constructor(
+    private userService: UsersService,
+    private jwtService: JwtService
+  ) { }
+
+  async signIn(createAuthDto: CreateAuthDto) {
+    const user = await this.userService.findOneByUserName(createAuthDto.username);
+    this.logger.log(`user login: ${JSON.stringify(user)}`);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordValid = await comparePasswordHelper(createAuthDto.password, user.PasswordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    const payload = { sub: user.Id, username: user.Username };
+    return {
+      access_token: await this.jwtService.signAsync(payload)
+    };
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
 }

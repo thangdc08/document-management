@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { DocumentRepository } from './documents.repository';
@@ -18,11 +19,12 @@ import { PaginationDto } from 'src/common/dto/pagination-query.dto';
 
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly usersRepository: UsersRepository,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async getHistory(documentId: number) {
     return await this.documentRepository.findHistory(documentId);
@@ -31,6 +33,7 @@ export class DocumentsService {
     const existing = await this.documentRepository.findOneByDocumentCode(
       createDto.DocumentCode,
     );
+    this.logger.log(`Checking existence for DocumentCode: ${createDto.DocumentCode}`, 'DocumentsService');
 
     if (existing) {
       throw new ConflictException('DocumentCode already exists');
@@ -60,8 +63,9 @@ export class DocumentsService {
     }
 
     const document = this.documentRepository.create(createDto);
-
-    return await this.documentRepository.save(document);
+    const saved = await this.documentRepository.save(document);
+    this.logger.log(`Document created with ID: ${saved.Id}`, 'DocumentsService');
+    return saved;
   }
 
   async findAll(paginationDto: PaginationDto) {
@@ -107,6 +111,7 @@ export class DocumentsService {
     note?: string,
   ) {
     return this.dataSource.transaction(async (manager) => {
+      this.logger.log(`Changing status for document ${documentId} with action ${action}`, 'DocumentsService');
       // Lock document để tránh race condition
       const document = await manager.findOne(Document, {
         where: { Id: documentId },

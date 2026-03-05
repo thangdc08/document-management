@@ -11,14 +11,20 @@ export class UsersRepository {
     @InjectRepository(User)
     private readonly repository: Repository<User>,
     private readonly roleRepository: RolesRepository,
-  ) {}
+  ) { }
 
-  async findOneByUsername(UserName: string): Promise<User | null> {
-    return await this.repository.findOne({ where: { Username: UserName } });
+  async findOneByUsername(username: string): Promise<User | null> {
+    return await this.repository.findOne({
+      where: { Username: username },
+      select: ['Id', 'Username', 'PasswordHash', 'FullName', 'Email', 'RoleId', 'IsActive', 'CreatedAt']
+    });
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
-    return await this.repository.findOne({ where: { Email: email } });
+    return await this.repository.findOne({
+      where: { Email: email },
+      select: ['Id', 'Username', 'FullName', 'Email', 'RoleId', 'IsActive', 'CreatedAt']
+    });
   }
 
   async findOneByRoleId(roleId: number): Promise<Role | null> {
