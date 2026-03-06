@@ -3,7 +3,7 @@ import { DocumentHistoryService } from './document-history.service';
 import { CreateDocumentHistoryDto } from './dto/create-document-history.dto';
 import { UpdateDocumentHistoryDto } from './dto/update-document-history.dto';
 
-@Controller('document-history')
+@Controller('api/v1/document-history')
 export class DocumentHistoryController {
   constructor(private readonly documentHistoryService: DocumentHistoryService) {}
 

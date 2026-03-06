@@ -1,7 +1,11 @@
 import { Document } from 'src/documents/entities/document.entity';
 import { Role } from 'src/roles/entities/role.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany, Index } from 'typeorm';
 @Entity('Users')
+@Index('IX_Users_Username', ['Username'], { unique: true })
+@Index('IX_Users_Email', ['Email'], { unique: true })
+@Index('IX_Users_RoleId', ['RoleId'])
+@Index('IX_Users_IsActive', ['IsActive'])
 export class User {
 
   @PrimaryGeneratedColumn()

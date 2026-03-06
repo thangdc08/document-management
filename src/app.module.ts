@@ -37,7 +37,10 @@ import { loggerConfig } from './common/configs/logger.config';
             trustServerCertificate: true, // Set to true for local development
           },
         },
-        logging: true, // Log mọi truy vấn SQL ra console
+        logging:
+          configService.get('NODE_ENV') === 'development'
+            ? ['query', 'error']
+            : ['error'],
         logger: 'advanced-console',
       }),
     }),

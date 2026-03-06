@@ -1,8 +1,10 @@
 import { User } from 'src/users/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Index } from 'typeorm';
 import { RolePermission } from './role-permission.entity';
 
 @Entity('Roles')
+@Index('IX_Roles_Code', ['Code'], { unique: true })
+@Index('IX_Roles_IsActive', ['IsActive'])
 export class Role {
 
   @PrimaryGeneratedColumn()
@@ -12,12 +14,12 @@ export class Role {
   Code: string;
 
   @Column({ type: 'nvarchar', length: 150 })
-  Name: string; 
+  Name: string;
 
   @Column({ type: 'nvarchar', length: 255, nullable: true })
   Description: string;
 
-  @Column({ type: 'bit', default: true }) 
+  @Column({ type: 'bit', default: true })
   IsActive: boolean;
 
   @CreateDateColumn({ type: 'datetime' })

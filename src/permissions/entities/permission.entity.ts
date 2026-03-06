@@ -1,11 +1,13 @@
-import { 
-  Entity, 
-  PrimaryGeneratedColumn, 
-  Column, 
-  CreateDateColumn
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  Index
 } from 'typeorm';
 
 @Entity('Permissions')
+@Index('IX_Permissions_Code', ['Code'], { unique: true })
 export class Permission {
   @PrimaryGeneratedColumn()
   Id: number;

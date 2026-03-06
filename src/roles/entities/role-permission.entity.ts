@@ -1,8 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Index } from "typeorm";
 import { Role } from "./role.entity";
 import { Permission } from "src/permissions/entities/permission.entity";
 
 @Entity('RolePermissions')
+@Index('IX_RolePermissions_RoleId_PermissionId', ['RoleId', 'PermissionId'], { unique: true })
+@Index('IX_RolePermissions_RoleId', ['RoleId'])
 export class RolePermission {
   @PrimaryGeneratedColumn()
   Id: number;

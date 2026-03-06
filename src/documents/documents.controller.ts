@@ -13,11 +13,11 @@ import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentActionDto } from './dto/document-action.dto';
-import { PaginationDto } from 'src/common/dto/pagination-query.dto';
+import { FilterDocumentDto } from './dto/filter-document.dto';
 
-@Controller('documents')
+@Controller('api/v1/documents')
 export class DocumentsController {
-  constructor(private readonly documentsService: DocumentsService) {}
+  constructor(private readonly documentsService: DocumentsService) { }
 
   @Post()
   create(@Body() createDocumentDto: CreateDocumentDto) {
@@ -25,8 +25,8 @@ export class DocumentsController {
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.documentsService.findAll(paginationDto);
+  findAll(@Query() filterDto: FilterDocumentDto) {
+    return this.documentsService.findAll(filterDto);
   }
 
   @Get(':id')

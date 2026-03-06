@@ -11,11 +11,11 @@ import { Document } from './entities/document.entity';
 import { UsersRepository } from 'src/users/users.repository';
 import { DocumentAction } from './enums/document-action.enum';
 import { DocumentHistory } from 'src/document-history/entities/document-history.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { DocumentWorkflow } from './workflow/document-workflow.util';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentStatus } from './enums/document-status.enum';
-import { PaginationDto } from 'src/common/dto/pagination-query.dto';
+import { FilterDocumentDto } from './dto/filter-document.dto';
 
 @Injectable()
 export class DocumentsService {
@@ -68,11 +68,11 @@ export class DocumentsService {
     return saved;
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { page, limit } = paginationDto;
+  async findAll(filterDto: FilterDocumentDto) {
+    const { page, limit } = filterDto;
 
     const { data, total } =
-      await this.documentRepository.findAllWithUsers(paginationDto);
+      await this.documentRepository.findAllWithUsers(filterDto);
 
     return {
       data,
@@ -110,7 +110,7 @@ export class DocumentsService {
     assignedTo?: number,
     note?: string,
   ) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async (manager: EntityManager) => {
       this.logger.log(`Changing status for document ${documentId} with action ${action}`, 'DocumentsService');
       // Lock document để tránh race condition
       const document = await manager.findOne(Document, {
@@ -162,7 +162,7 @@ export class DocumentsService {
   }
 
   async update(id: number, dto: UpdateDocumentDto, userId: number) {
-    return this.dataSource.transaction(async (manager) => {
+    return this.dataSource.transaction(async (manager: EntityManager) => {
       const document = await manager.findOne(Document, {
         where: { Id: id },
         lock: { mode: 'pessimistic_write' },

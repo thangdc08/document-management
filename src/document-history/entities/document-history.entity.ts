@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 import { Document } from '../../documents/entities/document.entity';
 import { User } from '../../users/entities/user.entity';
@@ -12,6 +13,9 @@ import { DocumentAction } from 'src/documents/enums/document-action.enum';
 import { DocumentStatus } from 'src/documents/enums/document-status.enum';
 
 @Entity('DocumentHistories')
+@Index('IX_DocumentHistories_DocumentId', ['DocumentId'])
+@Index('IX_DocumentHistories_FromUserId', ['FromUserId'])
+@Index('IX_DocumentHistories_DocumentId_CreatedAt', ['DocumentId', 'CreatedAt'])
 export class DocumentHistory {
   @PrimaryGeneratedColumn()
   Id: number;
