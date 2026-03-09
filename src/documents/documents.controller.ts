@@ -78,6 +78,13 @@ export class DocumentsController {
     return this.documentsService.getHistory(id);
   }
 
+  //Lấy các action cho phép tương ứng với status hiện tại
+  @Get(':id/allowed-actions')
+  async getAllowedActions(@Param('id', ParseIntPipe) id: number) {
+    const document = await this.documentsService.findOne(id);
+    return this.documentsService.getAllowedActions(document.Status);
+  }
+
   //Upload file 
   @Post('/upload')
   @UseInterceptors(FilesInterceptor('file', 10, multerOptions))

@@ -7,11 +7,13 @@ import { DocumentRepository } from './documents.repository';
 import { UsersModule } from 'src/users/users.module';
 import { DocumentHistory } from 'src/document-history/entities/document-history.entity';
 import { DocumentFile } from './entities/document-file.entity';
+import { DocumentWorkflowRule } from './entities/document-workflow-rule.entity';
+import { DocumentWorkflowService } from './workflow/document-workflow.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Document, DocumentHistory, DocumentHistory, DocumentFile]),UsersModule],
+  imports: [TypeOrmModule.forFeature([Document, DocumentHistory, DocumentFile, DocumentWorkflowRule]), UsersModule],
   controllers: [DocumentsController],
-  providers: [DocumentsService, DocumentRepository],
-  exports: [DocumentsService, DocumentRepository],
+  providers: [DocumentsService, DocumentRepository, DocumentWorkflowService],
+  exports: [DocumentsService, DocumentRepository, DocumentWorkflowService],
 })
 export class DocumentsModule { }

@@ -12,12 +12,12 @@ import { UsersRepository } from 'src/users/users.repository';
 import { DocumentAction } from './enums/document-action.enum';
 import { DocumentHistory } from 'src/document-history/entities/document-history.entity';
 import { DataSource, EntityManager, In, Repository } from 'typeorm';
-import { DocumentWorkflow } from './workflow/document-workflow.util';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentStatus } from './enums/document-status.enum';
 import { FilterDocumentDto } from './dto/filter-document.dto';
 import { DocumentFile } from './entities/document-file.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DocumentWorkflowService } from './workflow/document-workflow.service';
 
 @Injectable()
 export class DocumentsService {
@@ -28,6 +28,7 @@ export class DocumentsService {
     private readonly dataSource: DataSource,
     @InjectRepository(DocumentFile)
     private readonly documentFileRepository: Repository<DocumentFile>,
+    private readonly workflowService: DocumentWorkflowService,
   ) { }
 
   async getHistory(documentId: number) {
@@ -184,11 +185,8 @@ export class DocumentsService {
 
       const currentStatus = document.Status;
 
-      // Validate workflow
-      DocumentWorkflow.validateTransition(currentStatus, action);
-
-      // Map status mới
-      const newStatus = DocumentWorkflow.mapActionToStatus(action, currentStatus);
+      // Validate workflow and get next status
+      const newStatus = await this.workflowService.getNextStatus(currentStatus, action);
 
       // Update document
       document.Status = newStatus;
@@ -282,5 +280,9 @@ export class DocumentsService {
     });
 
     return await this.documentFileRepository.save(files);
+  }
+
+  async getAllowedActions(status: DocumentStatus) {
+    return this.workflowService.getAllowedActions(status);
   }
 }
