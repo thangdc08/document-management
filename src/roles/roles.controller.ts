@@ -11,43 +11,52 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AssignPermissionsDto } from './dto/AssignPermissionsDto';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('roles')
 @Controller('api/v1/roles')
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(private readonly rolesService: RolesService) { }
 
   @Post()
+  @ApiOperation({ summary: 'Tạo vai trò mới' })
   create(@Body() createRoleDto: CreateRoleDto) {
     return this.rolesService.create(createRoleDto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Lấy danh sách vai trò' })
   findAll() {
     return this.rolesService.findAll();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Lấy chi tiết vai trò' })
   findOne(@Param('id') id: string) {
     return this.rolesService.findOne(+id);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Cập nhật thông tin vai trò' })
   update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
     return this.rolesService.update(+id, updateRoleDto);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Xóa vai trò' })
   remove(@Param('id') id: string) {
     return this.rolesService.remove(+id);
   }
 
   @Patch(':id/deactivate')
+  @ApiOperation({ summary: 'Vô hiệu hóa vai trò (Soft Delete)' })
   deactivate(@Param('id') id: number) {
     return this.rolesService.softDelete(+id);
   }
 
   // Gán quyền cho vai trò
   @Patch(':id/permissions')
+  @ApiOperation({ summary: 'Gán danh sách quyền cho vai trò' })
   assignPermissions(
     @Param('id') id: number,
     @Body() permissionIds: AssignPermissionsDto,
