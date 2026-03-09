@@ -8,12 +8,18 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentActionDto } from './dto/document-action.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/common/configs/multer.config';
+import { UploadedFiles } from '@nestjs/common';
 
 @Controller('api/v1/documents')
 export class DocumentsController {
@@ -67,5 +73,19 @@ export class DocumentsController {
   @Get(':id/history')
   getHistory(@Param('id', ParseIntPipe) id: number) {
     return this.documentsService.getHistory(id);
+  }
+
+  //Upload file 
+  @Post('/upload')
+  @UseInterceptors(FilesInterceptor('file', 10, multerOptions))
+  async upload(
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    const results: any[] = [];
+    for (const file of files) {
+      const result = await this.documentsService.uploadFile(file, 1);
+      results.push(result);
+    }
+    return results;
   }
 }

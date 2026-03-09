@@ -16,7 +16,7 @@ export class DocumentRepository {
     private readonly documentHistoryRepository: Repository<DocumentHistory>,
   ) { }
 
-  async findAllWithUsers(
+  async findAll(
     filterDto: FilterDocumentDto,
   ): Promise<{ data: Document[]; total: number }> {
     const { page, limit, keyword, status, createdBy, assignedTo, fromDate, toDate } = filterDto;

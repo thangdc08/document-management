@@ -8,11 +8,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
 import { DocumentStatus } from '../enums/document-status.enum';
+import { DocumentFile } from './document-file.entity';
 
 @Entity('Documents')
-@Index('IX_Documents_DocumentCode', ['DocumentCode'], { unique: true })
 @Index('IX_Documents_Status', ['Status'])
 export class Document {
   @PrimaryGeneratedColumn({ name: 'Id' })
@@ -26,18 +27,6 @@ export class Document {
 
   @Column({ type: 'nvarchar', length: 1000, nullable: true })
   Description: string;
-
-  @Column({ length: 255, nullable: true })
-  FileName: string;
-
-  @Column({ length: 500, nullable: true })
-  FilePath: string;
-
-  @Column({ type: 'bigint', nullable: true })
-  FileSize: number;
-
-  @Column({ length: 100, nullable: true })
-  FileType: string;
 
   @Column({
     type: 'nvarchar',
@@ -65,8 +54,8 @@ export class Document {
   @Column({ name: 'AssignedTo', nullable: true })
   AssignedTo: number;
 
-  // @OneToMany(() => DocumentHistory, (history) => history.Document)
-  // Histories: DocumentHistory[];
+  @OneToMany(() => DocumentFile, (file) => file.Document)
+  Files: DocumentFile[];
 
   @CreateDateColumn({ name: 'CreatedAt' })
   CreatedAt: Date;

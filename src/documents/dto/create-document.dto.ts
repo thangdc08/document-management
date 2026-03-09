@@ -6,8 +6,7 @@ import {
   IsNotEmpty,
   IsPositive,
   IsInt,
-  Min,
-  IsIn,
+  IsArray,
 } from 'class-validator';
 
 export class CreateDocumentDto {
@@ -26,34 +25,6 @@ export class CreateDocumentDto {
   @MaxLength(1000, { message: 'Description tối đa 1000 ký tự' })
   Description?: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(255, { message: 'FileName tối đa 255 ký tự' })
-  FileName?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(500, { message: 'FilePath tối đa 500 ký tự' })
-  FilePath?: string;
-
-  @IsOptional()
-  @IsNumber({}, { message: 'FileSize phải là số' })
-  @Min(1, { message: 'FileSize phải lớn hơn 0' })
-  FileSize?: number;
-
-  @IsOptional()
-  @IsString()
-  @IsIn([
-    'pdf',
-    'doc',
-    'docx',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'], {
-    message: 'FileType chỉ chấp nhận: pdf, doc, docx',
-  })
-  FileType?: string;
-
   @IsNumber({}, { message: 'CreatedBy phải là số' })
   @IsInt({ message: 'CreatedBy phải là số nguyên' })
   @IsPositive({ message: 'CreatedBy phải > 0' })
@@ -64,4 +35,10 @@ export class CreateDocumentDto {
   @IsInt({ message: 'AssignedTo phải là số nguyên' })
   @IsPositive({ message: 'AssignedTo phải > 0' })
   AssignedTo?: number;
+
+  // danh sách file đã upload trước
+  @IsOptional()
+  @IsArray({ message: 'fileIds phải là mảng' })
+  @IsInt({ each: true, message: 'fileId phải là số nguyên' })
+  fileIds?: number[];
 }
