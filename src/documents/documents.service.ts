@@ -94,6 +94,16 @@ export class DocumentsService {
       }
 
       this.logger.log(`Document created with ID: ${saved.Id}`, 'DocumentsService');
+
+      // 3. Ghi log lịch sử tạo mới
+      await manager.save(DocumentHistory, {
+        DocumentId: saved.Id,
+        Action: DocumentAction.CREATE,
+        FromUserId: createDto.CreatedBy,
+        StatusAfter: saved.Status,
+        Note: 'Document created',
+      });
+
       return saved;
     });
   }
@@ -124,12 +134,30 @@ export class DocumentsService {
     return document;
   }
 
-  async remove(id: number): Promise<{ message: string }> {
-    const document = await this.findOne(id);
+  async remove(id: number, userId?: number): Promise<{ message: string }> {
+    return this.dataSource.transaction(async (manager: EntityManager) => {
+      const document = await manager.findOne(Document, {
+        where: { Id: id },
+        lock: { mode: 'pessimistic_write' },
+      });
 
-    await this.documentRepository.remove(document);
+      if (!document) {
+        throw new NotFoundException(`Document with Id ${id} not found`);
+      }
 
-    return { message: 'Deleted successfully' };
+      // Ghi log lịch sử xóa (trước khi xóa cứng)
+      await manager.save(DocumentHistory, {
+        DocumentId: document.Id,
+        Action: DocumentAction.DELETE,
+        FromUserId: userId,
+        StatusAfter: document.Status,
+        Note: 'Document deleted',
+      });
+
+      await manager.remove(Document, document);
+
+      return { message: 'Deleted successfully' };
+    });
   }
 
   async changeStatus(
@@ -207,11 +235,10 @@ export class DocumentsService {
       const updated = await manager.save(Document, document);
 
       await manager.save(DocumentHistory, {
-        Document: updated,
+        DocumentId: updated.Id,
         Action: DocumentAction.UPDATE,
         FromUserId: userId,
-        FromStatus: oldStatus,
-        ToStatus: updated.Status,
+        StatusAfter: updated.Status,
         Note: 'Document updated',
       });
 

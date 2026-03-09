@@ -50,8 +50,11 @@ export class DocumentsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.documentsService.remove(+id);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('userId') userId: number,
+  ) {
+    return this.documentsService.remove(id, +userId);
   }
 
   @Patch(':id/action')
