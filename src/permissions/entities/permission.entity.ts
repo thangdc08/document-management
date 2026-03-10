@@ -3,8 +3,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Index
+  Index,
+  OneToMany
 } from 'typeorm';
+import { RolePermission } from 'src/roles/entities/role-permission.entity';
 
 @Entity('Permissions')
 @Index('IX_Permissions_Code', ['Code'], { unique: true })
@@ -15,16 +17,16 @@ export class Permission {
   @Column({ type: 'varchar', length: 50, unique: true })
   Code: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'nvarchar', length: 100, nullable: true })
   Name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'nvarchar', length: 'MAX', nullable: true })
   Description: string;
 
   @CreateDateColumn({ type: 'datetime' })
   CreatedAt: Date;
 
   // Thiết lập quan hệ 1-nhiều với bảng trung gian RolePermissions
-  // @OneToMany(() => RolePermission, (rolePermission) => rolePermission.permission)
-  // rolePermissions: RolePermission[];
+  @OneToMany(() => RolePermission, (rolePermission) => rolePermission.permission)
+  rolePermissions: RolePermission[];
 }

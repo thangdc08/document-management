@@ -19,10 +19,10 @@ export class Document {
   @PrimaryGeneratedColumn({ name: 'Id' })
   Id: number;
 
-  @Column({ length: 50 })
+  @Column({ type: 'nvarchar', length: 50 })
   DocumentCode: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'nvarchar', length: 255 })
   Title: string;
 
   @Column({ type: 'nvarchar', length: 1000, nullable: true })

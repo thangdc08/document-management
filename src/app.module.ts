@@ -30,7 +30,7 @@ import { loggerConfig } from './common/configs/logger.config';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: false, // Set to false in production
+        synchronize: true, // Set to false in production
         extra: {
           options: {
             encrypt: false,

@@ -25,16 +25,16 @@ export class DocumentFile {
   @Column({ name: 'DocumentId', nullable: true })
   DocumentId: number;
 
-  @Column({ length: 255 })
+  @Column({ type: 'nvarchar', length: 255 })
   FileName: string;
 
-  @Column({ length: 500 })
+  @Column({ type: 'nvarchar', length: 500 })
   FilePath: string;
 
   @Column({ type: 'bigint' })
   FileSize: number;
 
-  @Column({ length: 100 })
+  @Column({ type: 'nvarchar', length: 100 })
   FileType: string;
 
   @ManyToOne(() => User, { onDelete: 'NO ACTION' })
