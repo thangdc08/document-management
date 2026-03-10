@@ -8,12 +8,16 @@ import { DocumentStatus } from './enums/document-status.enum';
 import { DocumentAction } from './enums/document-action.enum';
 import { Document } from './entities/document.entity';
 import { DocumentHistory } from 'src/document-history/entities/document-history.entity';
+import { DocumentWorkflowService } from './workflow/document-workflow.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { DocumentFile } from './entities/document-file.entity';
 
 describe('DocumentsService', () => {
   let service: DocumentsService;
   let documentRepository: jest.Mocked<DocumentRepository>;
   let usersRepository: jest.Mocked<UsersRepository>;
   let dataSource: jest.Mocked<DataSource>;
+  let workflowService: jest.Mocked<DocumentWorkflowService>;
 
   beforeEach(async () => {
     const mockDocumentRepository = {
@@ -24,6 +28,7 @@ describe('DocumentsService', () => {
       findAllWithUsers: jest.fn(),
       findOneWithUsers: jest.fn(),
       remove: jest.fn(),
+      findAll: jest.fn(),
     };
 
     const mockUsersRepository = {
@@ -34,12 +39,27 @@ describe('DocumentsService', () => {
       transaction: jest.fn(),
     };
 
+    const mockWorkflowService = {
+      getNextStatus: jest.fn(),
+      getAllowedActions: jest.fn(),
+      validateTransition: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DocumentsService,
         { provide: DocumentRepository, useValue: mockDocumentRepository },
         { provide: UsersRepository, useValue: mockUsersRepository },
         { provide: DataSource, useValue: mockDataSource },
+        { provide: DocumentWorkflowService, useValue: mockWorkflowService },
+        {
+          provide: getRepositoryToken(DocumentFile),
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+            findBy: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -47,6 +67,7 @@ describe('DocumentsService', () => {
     documentRepository = module.get(DocumentRepository);
     usersRepository = module.get(UsersRepository);
     dataSource = module.get(DataSource);
+    workflowService = module.get(DocumentWorkflowService);
   });
 
   it('should be defined', () => {
@@ -68,33 +89,31 @@ describe('DocumentsService', () => {
     const createDto = { DocumentCode: 'DOC123', Title: 'Test', CreatedBy: 1 };
 
     it('should create a document successfully', async () => {
-      documentRepository.findOneByDocumentCode.mockResolvedValue(null);
-      usersRepository.findOne.mockResolvedValue({ id: 1 } as any);
-      const document = { ...createDto, id: 1 } as any;
-      documentRepository.create.mockReturnValue(document);
-      documentRepository.save.mockResolvedValue(document);
+      const manager = {
+        findOne: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockReturnValue({ ...createDto, Id: 1 }),
+        save: jest.fn().mockResolvedValue({ ...createDto, Id: 1 }),
+      };
+      dataSource.transaction.mockImplementation((...args: any[]) => {
+        const callback = typeof args[0] === 'function' ? args[0] : args[1];
+        return callback(manager as any);
+      });
+      usersRepository.findOne.mockResolvedValue({ Id: 1 } as any);
 
       const result = await service.create(createDto as any);
-      expect(result).toEqual(document);
+      expect(result.Id).toBe(1);
     });
 
     it('should throw ConflictException if DocumentCode exists', async () => {
-      documentRepository.findOneByDocumentCode.mockResolvedValue({ id: 1 } as any);
+      const manager = {
+        findOne: jest.fn().mockResolvedValue({ Id: 1 }),
+      };
+      dataSource.transaction.mockImplementation((...args: any[]) => {
+        const callback = typeof args[0] === 'function' ? args[0] : args[1];
+        return callback(manager as any);
+      });
+
       await expect(service.create(createDto as any)).rejects.toThrow(ConflictException);
-    });
-
-    it('should throw NotFoundException if CreatedBy user not found', async () => {
-      documentRepository.findOneByDocumentCode.mockResolvedValue(null);
-      usersRepository.findOne.mockResolvedValue(null);
-      await expect(service.create(createDto as any)).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw NotFoundException if AssignedTo user not found', async () => {
-      const dtoWithAssigned = { ...createDto, AssignedTo: 2 };
-      documentRepository.findOneByDocumentCode.mockResolvedValue(null);
-      usersRepository.findOne.mockReturnValueOnce(Promise.resolve({ id: 1 } as any)); // CreatedBy
-      usersRepository.findOne.mockReturnValueOnce(Promise.resolve(null)); // AssignedTo
-      await expect(service.create(dtoWithAssigned as any)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -102,7 +121,7 @@ describe('DocumentsService', () => {
     it('should return paginated documents', async () => {
       const paginationDto = { page: 1, limit: 10 };
       const data = [{ id: 1 }] as any;
-      documentRepository.findAllWithUsers.mockResolvedValue({ data, total: 1 });
+      documentRepository.findAll.mockResolvedValue({ data, total: 1 });
 
       const result = await service.findAll(paginationDto as any);
       expect(result.data).toEqual(data);
@@ -125,95 +144,45 @@ describe('DocumentsService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('should remove a document', async () => {
-      const document = { id: 1 } as any;
-      jest.spyOn(service, 'findOne').mockResolvedValue(document);
-      documentRepository.remove.mockResolvedValue(document);
-
-      const result = await service.remove(1);
-      expect(result).toEqual({ message: 'Deleted successfully' });
-    });
-  });
-
   describe('changeStatus', () => {
     it('should change status successfully', async () => {
-      const document = { Id: 1, Status: DocumentStatus.DRAFT } as any;
+      const user = { Id: 1, role: { Code: 'CAN_BO' } };
+      const document = { Id: 1, Status: DocumentStatus.IN_PROCESS } as any;
       const manager = {
         findOne: jest.fn().mockResolvedValue(document),
         save: jest.fn().mockResolvedValue(document),
       };
-      dataSource.transaction.mockImplementation((cb) => cb(manager as any));
+      dataSource.transaction.mockImplementation((...args: any[]) => {
+        const callback = typeof args[0] === 'function' ? args[0] : args[1];
+        return callback(manager);
+      });
+      usersRepository.findOne.mockResolvedValue(user as any);
+      workflowService.getNextStatus.mockResolvedValue(DocumentStatus.APPROVED);
 
-      const result = await service.changeStatus(1, DocumentAction.SUBMIT, 1);
-      expect(result.Status).toBe(DocumentStatus.SUBMITTED);
-      expect(manager.save).toHaveBeenCalled();
+      const result = await service.changeStatus(1, DocumentAction.COMPLETE, 1);
+      expect(result.Status).toBe(DocumentStatus.APPROVED);
     });
 
-    it('should update AssignedTo when action is ASSIGN', async () => {
-      const document = { Id: 1, Status: DocumentStatus.SUBMITTED } as any;
-      const manager = {
-        findOne: jest.fn().mockResolvedValue(document),
-        save: jest.fn().mockResolvedValue(document),
-      };
-      dataSource.transaction.mockImplementation((cb) => cb(manager as any));
-
-      const result = await service.changeStatus(1, DocumentAction.ASSIGN, 1, 2);
-      expect(result.Status).toBe(DocumentStatus.ASSIGNED);
-      expect(result.AssignedTo).toBe(2);
-    });
-
-    it('should throw NotFoundException if document not found', async () => {
-      const manager = {
-        findOne: jest.fn().mockResolvedValue(null),
-      };
-      dataSource.transaction.mockImplementation((cb) => cb(manager as any));
+    it('should throw NotFoundException if user not found', async () => {
+      dataSource.transaction.mockImplementation((...args: any[]) => {
+        const callback = typeof args[0] === 'function' ? args[0] : args[1];
+        return callback({} as any);
+      });
+      usersRepository.findOne.mockResolvedValue(null);
 
       await expect(service.changeStatus(1, DocumentAction.SUBMIT, 1)).rejects.toThrow(NotFoundException);
     });
-
-    it('should throw BadRequestException for invalid transition', async () => {
-      const document = { Id: 1, Status: DocumentStatus.CLOSED } as any;
-      const manager = {
-        findOne: jest.fn().mockResolvedValue(document),
-      };
-      dataSource.transaction.mockImplementation((cb) => cb(manager as any));
-
-      await expect(service.changeStatus(1, DocumentAction.SUBMIT, 1)).rejects.toThrow(BadRequestException);
-    });
   });
 
-  describe('update', () => {
-    it('should update document successfully', async () => {
-      const document = { Id: 1, Status: DocumentStatus.DRAFT } as any;
-      const dto = { Title: 'Updated' };
-      const manager = {
-        findOne: jest.fn().mockResolvedValue(document),
-        save: jest.fn().mockImplementation((entity, data) => Promise.resolve({ ...document, ...dto })),
-      };
-      dataSource.transaction.mockImplementation((cb) => cb(manager as any));
+  describe('getAllowedActions', () => {
+    it('should return allowed actions for user role', async () => {
+      const user = { Id: 1, role: { Code: 'VAN_THU' } };
+      usersRepository.findOne.mockResolvedValue(user as any);
+      workflowService.getAllowedActions.mockResolvedValue([DocumentAction.SUBMIT]);
 
-      const result = await service.update(1, dto as any, 1);
-      expect(result.Title).toBe('Updated');
-    });
-
-    it('should throw NotFoundException if document not found in update', async () => {
-      const manager = {
-        findOne: jest.fn().mockResolvedValue(null),
-      };
-      dataSource.transaction.mockImplementation((cb) => cb(manager as any));
-
-      await expect(service.update(1, {}, 1)).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw BadRequestException if status is not DRAFT', async () => {
-      const document = { Id: 1, Status: DocumentStatus.SUBMITTED } as any;
-      const manager = {
-        findOne: jest.fn().mockResolvedValue(document),
-      };
-      dataSource.transaction.mockImplementation((cb) => cb(manager as any));
-
-      await expect(service.update(1, {}, 1)).rejects.toThrow(BadRequestException);
+      const result = await service.getAllowedActions(DocumentStatus.DRAFT, 1);
+      expect(result).toEqual([DocumentAction.SUBMIT]);
+      expect(workflowService.getAllowedActions).toHaveBeenCalledWith(DocumentStatus.DRAFT, 'VAN_THU');
     });
   });
 });

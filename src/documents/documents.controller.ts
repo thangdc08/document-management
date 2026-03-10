@@ -92,9 +92,13 @@ export class DocumentsController {
   //Lấy các action cho phép tương ứng với status hiện tại
   @Get(':id/allowed-actions')
   @ApiOperation({ summary: 'Lấy các hành động được phép dựa trên trạng thái hiện tại' })
-  async getAllowedActions(@Param('id', ParseIntPipe) id: number) {
+  @ApiQuery({ name: 'userId', type: Number, description: 'ID người dùng để kiểm tra quyền' })
+  async getAllowedActions(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('userId', ParseIntPipe) userId: number,
+  ) {
     const document = await this.documentsService.findOne(id);
-    return this.documentsService.getAllowedActions(document.Status);
+    return this.documentsService.getAllowedActions(document.Status, userId);
   }
 
   //Upload file 

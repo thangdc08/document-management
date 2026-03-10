@@ -9,9 +9,14 @@ import { DocumentHistory } from 'src/document-history/entities/document-history.
 import { DocumentFile } from './entities/document-file.entity';
 import { DocumentWorkflowRule } from './entities/document-workflow-rule.entity';
 import { DocumentWorkflowService } from './workflow/document-workflow.service';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Document, DocumentHistory, DocumentFile, DocumentWorkflowRule]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Document, DocumentHistory, DocumentFile, DocumentWorkflowRule]),
+    UsersModule,
+    RolesModule,
+  ],
   controllers: [DocumentsController],
   providers: [DocumentsService, DocumentRepository, DocumentWorkflowService],
   exports: [DocumentsService, DocumentRepository, DocumentWorkflowService],

@@ -1,6 +1,7 @@
 import { User } from 'src/users/entities/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Index } from 'typeorm';
 import { RolePermission } from './role-permission.entity';
+import { DocumentWorkflowRule } from 'src/documents/entities/document-workflow-rule.entity';
 
 @Entity('Roles')
 @Index('IX_Roles_Code', ['Code'], { unique: true })
@@ -31,4 +32,7 @@ export class Role {
 
   @OneToMany(() => RolePermission, rp => rp.role)
   rolePermissions: RolePermission[];
+
+  @OneToMany(() => DocumentWorkflowRule, rule => rule.role)
+  workflowRules: DocumentWorkflowRule[];
 }

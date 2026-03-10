@@ -109,6 +109,7 @@ export class DocumentsService {
     });
   }
 
+  // Tìm tất cả document theo filter
   async findAll(filterDto: FilterDocumentDto) {
     const { page, limit } = filterDto;
 
@@ -125,6 +126,7 @@ export class DocumentsService {
     };
   }
 
+  // Tìm document theo id
   async findOne(id: number): Promise<Document> {
     const document = await this.documentRepository.findOneWithUsers(id);
 
@@ -135,6 +137,7 @@ export class DocumentsService {
     return document;
   }
 
+  // Xóa document
   async remove(id: number, userId?: number): Promise<{ message: string }> {
     return this.dataSource.transaction(async (manager: EntityManager) => {
       const document = await manager.findOne(Document, {
@@ -161,6 +164,7 @@ export class DocumentsService {
     });
   }
 
+  // Thay đổi trạng thái document
   async changeStatus(
     documentId: number,
     action: DocumentAction,
@@ -173,7 +177,19 @@ export class DocumentsService {
         `Changing status for document ${documentId} with action ${action}`,
         'DocumentsService',
       );
-      // Lock document để tránh race condition
+
+      if (fromUserId === assignedTo) {
+        throw new BadRequestException('User cannot change status to themselves');
+      }
+
+      // 1. Fetch user and their role code
+      const user = await this.usersRepository.findOne(fromUserId);
+      if (!user || !user.role) {
+        throw new NotFoundException(`User with ID ${fromUserId} not found or has no role`);
+      }
+      const roleCode = user.role.Code;
+
+      // 2. Lock document to avoid race condition
       const document = await manager.findOne(Document, {
         where: { Id: documentId },
         lock: { mode: 'pessimistic_write' },
@@ -185,10 +201,10 @@ export class DocumentsService {
 
       const currentStatus = document.Status;
 
-      // Validate workflow and get next status
-      const newStatus = await this.workflowService.getNextStatus(currentStatus, action);
+      // 3. Validate workflow and get next status using roleCode
+      const newStatus = await this.workflowService.getNextStatus(currentStatus, action, roleCode);
 
-      // Update document
+      // 4. Update document
       document.Status = newStatus;
 
       if (action === DocumentAction.ASSIGN && assignedTo) {
@@ -197,7 +213,7 @@ export class DocumentsService {
 
       await manager.save(document);
 
-      // Insert history
+      // 5. Insert history
       await manager.save(DocumentHistory, {
         DocumentId: document.Id,
         Action: action,
@@ -212,6 +228,7 @@ export class DocumentsService {
     });
   }
 
+  // Cập nhật document
   async update(id: number, dto: UpdateDocumentDto, userId: number) {
     return this.dataSource.transaction(async (manager: EntityManager) => {
       const document = await manager.findOne(Document, {
@@ -244,6 +261,8 @@ export class DocumentsService {
     });
   }
 
+
+  // Upload file
   async uploadFile(file: Express.Multer.File, userId: number) {
     const docFile = this.documentFileRepository.create({
       FileName: file.originalname,
@@ -256,6 +275,7 @@ export class DocumentsService {
     return this.documentFileRepository.save(docFile);
   }
 
+  // Cập nhật file vào document
   async updateFileDocument(fileIds: number[], documentId: number) {
     const files = await this.documentFileRepository.findBy({
       Id: In(fileIds),
@@ -282,7 +302,12 @@ export class DocumentsService {
     return await this.documentFileRepository.save(files);
   }
 
-  async getAllowedActions(status: DocumentStatus) {
-    return this.workflowService.getAllowedActions(status);
+  // Lấy các action được phép dựa trên trạng thái và role của user
+  async getAllowedActions(status: DocumentStatus, userId: number) {
+    const user = await this.usersRepository.findOne(userId);
+    if (!user || !user.role) {
+      throw new NotFoundException(`User with ID ${userId} not found or has no role`);
+    }
+    return this.workflowService.getAllowedActions(status, user.role.Code);
   }
 }
