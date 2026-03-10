@@ -17,7 +17,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "cross-env TS_NODE_PROJECT=tsconfig.migration.json ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migration:generate": "npm run typeorm -- -d src/data-source.ts migration:generate",
+    "migration:run": "npm run typeorm -- -d src/data-source.ts migration:run",
+    "migration:revert": "npm run typeorm -- -d src/data-source.ts migration:revert",
+    "migration:show": "npm run typeorm -- -d src/data-source.ts migration:show",
+    "migration:create": "npm run typeorm -- migration:create"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -54,6 +60,7 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
