@@ -9,6 +9,7 @@ import { DocumentHistory } from 'src/document-history/entities/document-history.
 import { DocumentFile } from './entities/document-file.entity';
 import { DocumentWorkflowRule } from './entities/document-workflow-rule.entity';
 import { DocumentWorkflowService } from './workflow/document-workflow.service';
+import { DocumentWorkflowSeeder } from './workflow/document-workflow.seeder';
 import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
@@ -18,7 +19,7 @@ import { RolesModule } from 'src/roles/roles.module';
     RolesModule,
   ],
   controllers: [DocumentsController],
-  providers: [DocumentsService, DocumentRepository, DocumentWorkflowService],
+  providers: [DocumentsService, DocumentRepository, DocumentWorkflowService, DocumentWorkflowSeeder],
   exports: [DocumentsService, DocumentRepository, DocumentWorkflowService],
 })
-export class DocumentsModule { }
+export class DocumentsModule { }

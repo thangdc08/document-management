@@ -48,5 +48,9 @@ export class PermissionsRepository {
       Id: In(filter.id),
     });
   }
+
+  async findOneByPermissionCode(code: string): Promise<Permission | null> {
+    return await this.repository.findOne({ where: { Code: code } });
+  }
 }
 

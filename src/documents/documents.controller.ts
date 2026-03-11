@@ -21,30 +21,35 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/common/configs/multer.config';
 import { UploadedFiles } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import { RequiredPermission } from 'src/auth/decorators/permission.decorator';
 
 @ApiTags('documents')
 @Controller('api/v1/documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) { }
 
+  @RequiredPermission('DOC_CREATE')
   @Post()
   @ApiOperation({ summary: 'Tạo mới văn bản' })
   create(@Body() createDocumentDto: CreateDocumentDto) {
     return this.documentsService.create(createDocumentDto);
   }
 
+  @RequiredPermission('DOC_VIEW')
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách văn bản (có phân trang/lọc)' })
   findAll(@Query() filterDto: FilterDocumentDto) {
     return this.documentsService.findAll(filterDto);
   }
 
+  @RequiredPermission('DOC_DETAIL')
   @Get(':id')
   @ApiOperation({ summary: 'Lấy chi tiết một văn bản' })
   findOne(@Param('id') id: string) {
     return this.documentsService.findOne(+id);
   }
 
+  @RequiredPermission('DOC_UPDATE')
   @Patch(':id')
   @ApiOperation({ summary: 'Cập nhật thông tin văn bản (chỉ khi là DRAFT)' })
   @ApiQuery({ name: 'userId', type: Number, description: 'ID người thực hiện' })
@@ -56,6 +61,7 @@ export class DocumentsController {
     return this.documentsService.update(id, updateDocumentDto, +userId);
   }
 
+  @RequiredPermission('DOC_DELETE')
   @Delete(':id')
   @ApiOperation({ summary: 'Xóa văn bản' })
   @ApiQuery({ name: 'userId', type: Number, description: 'ID người thực hiện' })
@@ -66,12 +72,12 @@ export class DocumentsController {
     return this.documentsService.remove(id, +userId);
   }
 
+  @RequiredPermission('DOC_WORKFLOW')
   @Patch(':id/action')
   @ApiOperation({ summary: 'Thực hiện hành động workflow (Gửi, Duyệt, Giao xử lý...)' })
   async changeStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: DocumentActionDto,
-    // @Req() req,
   ) {
     return this.documentsService.changeStatus(
       id,
@@ -83,6 +89,7 @@ export class DocumentsController {
   }
 
   //Lấy lịch sử của document
+  @RequiredPermission('DOC_HISTORY')
   @Get(':id/history')
   @ApiOperation({ summary: 'Lấy lịch sử thay đổi của văn bản' })
   getHistory(@Param('id', ParseIntPipe) id: number) {
@@ -90,6 +97,7 @@ export class DocumentsController {
   }
 
   //Lấy các action cho phép tương ứng với status hiện tại
+  @RequiredPermission('DOC_ALLOWED_ACTIONS')
   @Get(':id/allowed-actions')
   @ApiOperation({ summary: 'Lấy các hành động được phép dựa trên trạng thái hiện tại' })
   @ApiQuery({ name: 'userId', type: Number, description: 'ID người dùng để kiểm tra quyền' })
@@ -102,6 +110,7 @@ export class DocumentsController {
   }
 
   //Upload file 
+  @RequiredPermission('DOC_UPLOAD')
   @Post('/upload')
   @ApiOperation({ summary: 'Upload nhiều file đính kèm' })
   @ApiConsumes('multipart/form-data')

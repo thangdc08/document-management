@@ -3,6 +3,7 @@ import { DocumentHistoryService } from './document-history.service';
 import { CreateDocumentHistoryDto } from './dto/create-document-history.dto';
 import { UpdateDocumentHistoryDto } from './dto/update-document-history.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { RequiredPermission } from 'src/auth/decorators/permission.decorator';
 
 @ApiTags('document-history')
 @Controller('api/v1/document-history')
@@ -15,12 +16,14 @@ export class DocumentHistoryController {
     return this.documentHistoryService.create(createDocumentHistoryDto);
   }
 
+  @RequiredPermission('HISTORY_VIEW')
   @Get()
   @ApiOperation({ summary: 'Lấy toàn bộ danh sách lịch sử' })
   findAll() {
     return this.documentHistoryService.findAll();
   }
 
+  @RequiredPermission('HISTORY_DETAIL')
   @Get(':id')
   @ApiOperation({ summary: 'Lấy chi tiết một bản ghi lịch sử' })
   findOne(@Param('id') id: string) {

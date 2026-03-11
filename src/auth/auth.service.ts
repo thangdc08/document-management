@@ -1,17 +1,21 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from 'src/users/users.service';
 import { comparePasswordHelper } from './helpers/util';
 import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
+import { RolePermission } from 'src/roles/entities/role-permission.entity';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private userService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    @InjectRepository(RolePermission)
+    private rolePermissionRepository: Repository<RolePermission>
   ) { }
 
   async signIn(createAuthDto: CreateAuthDto) {
@@ -30,6 +34,32 @@ export class AuthService {
     return {
       access_token: await this.jwtService.signAsync(payload)
     };
+  }
+
+
+  async hasPermission(
+    roleId: number,
+    permissionCode: string,
+  ): Promise<boolean> {
+
+    const rolePermissions = await this.rolePermissionRepository.find({
+      where: {
+        RoleId: roleId,
+        IsEnabled: true,
+      },
+      relations: ['permission'],
+    });
+
+    const permissionCodes = rolePermissions.map(
+      (item) => item.permission.Code,
+    );
+
+    // ADMIN_ALL bypass
+    if (permissionCodes.includes('ADMIN_ALL')) {
+      return true;
+    }
+
+    return permissionCodes.includes(permissionCode);
   }
 
 }
