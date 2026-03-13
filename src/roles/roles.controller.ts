@@ -11,9 +11,10 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AssignPermissionsDto } from './dto/AssignPermissionsDto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RequiredPermission } from 'src/auth/decorators/permission.decorator';
 
+@ApiBearerAuth()
 @ApiTags('roles')
 @Controller('api/v1/roles')
 export class RolesController {

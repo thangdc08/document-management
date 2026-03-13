@@ -37,17 +37,22 @@ export class DocumentWorkflowSeeder {
 
     private async seedWorkflowRules() {
         this.logger.log('Seeding workflow rules...');
-        if (await this.workflowRepository.count() > 0) {
-            this.logger.log('Workflow rules already exist');
-            return;
-        }
-        await this.workflowRepository.query('DELETE FROM DocumentWorkflowRules');
-
+        
         for (const rule of WORKFLOW_RULES_SEED) {
-            await this.workflowRepository.query(
-                'INSERT INTO DocumentWorkflowRules (CurrentStatus, Action, NextStatus, RoleCode) VALUES (@0, @1, @2, @3)',
-                [rule.CurrentStatus, rule.Action, rule.NextStatus, rule.RoleCode]
-            );
+            const existing = await this.workflowRepository.findOne({
+                where: { 
+                    CurrentStatus: rule.CurrentStatus as any, 
+                    Action: rule.Action as any, 
+                    RoleCode: rule.RoleCode 
+                }
+            });
+
+            if (!existing) {
+                await this.workflowRepository.query(
+                    'INSERT INTO DocumentWorkflowRules (CurrentStatus, Action, NextStatus, RoleCode) VALUES (@0, @1, @2, @3)',
+                    [rule.CurrentStatus, rule.Action, rule.NextStatus, rule.RoleCode]
+                );
+            }
         }
 
         this.logger.log('Seeded Document Workflow Rules');
@@ -55,14 +60,19 @@ export class DocumentWorkflowSeeder {
 
     private async seedPermissions() {
         this.logger.log('Seeding permissions...');
-        await this.workflowRepository.query('DELETE FROM RolePermissions');
-        await this.workflowRepository.query('DELETE FROM Permissions');
 
         for (const p of PERMISSIONS_SEED) {
-            await this.workflowRepository.query(
-                'INSERT INTO Permissions (Code, Name, CreatedAt) VALUES (@0, @1, GETDATE())',
-                [p.Code, p.Name]
+            const existing = await this.workflowRepository.query(
+                'SELECT Id FROM Permissions WHERE Code = @0', 
+                [p.Code]
             );
+
+            if (existing.length === 0) {
+                await this.workflowRepository.query(
+                    'INSERT INTO Permissions (Code, Name, CreatedAt) VALUES (@0, @1, GETDATE())',
+                    [p.Code, p.Name]
+                );
+            }
         }
         this.logger.log('Seeded Permissions');
     }
@@ -87,10 +97,17 @@ export class DocumentWorkflowSeeder {
             for (const permCode of permCodes) {
                 const permId = await getPerm(permCode);
                 if (permId) {
-                    await this.workflowRepository.query(
-                        'INSERT INTO RolePermissions (RoleId, PermissionId, IsEnabled, CreatedAt) VALUES (@0, @1, 1, GETDATE())',
+                    const existing = await this.workflowRepository.query(
+                        'SELECT Id FROM RolePermissions WHERE RoleId = @0 AND PermissionId = @1',
                         [roleId, permId]
                     );
+
+                    if (existing.length === 0) {
+                        await this.workflowRepository.query(
+                            'INSERT INTO RolePermissions (RoleId, PermissionId, IsEnabled, CreatedAt) VALUES (@0, @1, 1, GETDATE())',
+                            [roleId, permId]
+                        );
+                    }
                 }
             }
         }

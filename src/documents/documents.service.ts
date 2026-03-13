@@ -36,7 +36,7 @@ export class DocumentsService {
   }
 
   // Tạo document
-  async create(createDto: CreateDocumentDto): Promise<Document> {
+  async create(createDto: CreateDocumentDto, userId: number): Promise<Document> {
     return this.dataSource.transaction(async (manager: EntityManager) => {
       const { fileIds, ...documentData } = createDto;
 
@@ -48,12 +48,7 @@ export class DocumentsService {
         throw new ConflictException('DocumentCode already exists');
       }
 
-      if (createDto.CreatedBy) {
-        const createdByUser = await this.usersRepository.findOne(createDto.CreatedBy);
-        if (!createdByUser) {
-          throw new NotFoundException(`User with Id ${createDto.CreatedBy} not found`);
-        }
-      }
+      (documentData as any).CreatedBy = userId;
 
       if (createDto.AssignedTo) {
         const assignedUser = await this.usersRepository.findOne(createDto.AssignedTo);
@@ -100,7 +95,7 @@ export class DocumentsService {
       await manager.save(DocumentHistory, {
         DocumentId: saved.Id,
         Action: DocumentAction.CREATE,
-        FromUserId: createDto.CreatedBy,
+        FromUserId: userId,
         StatusAfter: saved.Status,
         Note: 'Document created',
       });

@@ -14,10 +14,6 @@ export class DocumentActionDto {
   @IsEnum(DocumentAction)
   action: DocumentAction;
 
-  //Tam thời để client truyền lên, sau này sẽ lấy từ token
-  @ApiProperty({ example: 1, description: 'ID người thực hiện' })
-  @IsNumber()
-  userId: number;
 
   // Chỉ bắt buộc khi action = ASSIGN
   @ApiPropertyOptional({ example: 2, description: 'ID người mới (chỉ dùng khi action là ASSIGN)' })

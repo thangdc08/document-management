@@ -29,11 +29,6 @@ export class CreateDocumentDto {
   @MaxLength(1000, { message: 'Description tối đa 1000 ký tự' })
   Description?: string;
 
-  @ApiProperty({ example: 1, description: 'ID người tạo' })
-  @IsNumber({}, { message: 'CreatedBy phải là số' })
-  @IsInt({ message: 'CreatedBy phải là số nguyên' })
-  @IsPositive({ message: 'CreatedBy phải > 0' })
-  CreatedBy: number;
 
   @ApiPropertyOptional({ example: 2, description: 'ID người được giao xử lý' })
   @IsOptional()

@@ -2,9 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { DocumentHistoryService } from './document-history.service';
 import { CreateDocumentHistoryDto } from './dto/create-document-history.dto';
 import { UpdateDocumentHistoryDto } from './dto/update-document-history.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RequiredPermission } from 'src/auth/decorators/permission.decorator';
 
+@ApiBearerAuth()
 @ApiTags('document-history')
 @Controller('api/v1/document-history')
 export class DocumentHistoryController {
