@@ -3,7 +3,6 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt } from "passport-jwt";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
-import { User } from "src/users/entities/user.entity";
 import { ConfigService } from "@nestjs/config";
 
 // Tạo strategy để xác thực token với tên là jwt
