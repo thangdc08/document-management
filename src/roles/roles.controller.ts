@@ -5,7 +5,8 @@ import {
   Body,
   Patch,
   Param,
-  Delete
+  Delete,
+  Req
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -64,12 +65,12 @@ export class RolesController {
 
   // Gán quyền cho vai trò
   @RequiredPermission('ROLE_ASSIGN_PERMISSIONS')
-  @Patch(':id/permissions')
+  @Patch('/permissions')
   @ApiOperation({ summary: 'Gán danh sách quyền cho vai trò' })
   assignPermissions(
-    @Param('id') id: number,
+    @Req() req: any,
     @Body() permissionIds: AssignPermissionsDto,
   ) {
-    return this.rolesService.assignPermissions(+id, permissionIds.permissionIds);
+    return this.rolesService.assignPermissions(req.user.RoleId, permissionIds.permissionIds);
   }
 }

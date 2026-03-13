@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { CreateDocumentHistoryDto } from './dto/create-document-history.dto';
-import { UpdateDocumentHistoryDto } from './dto/update-document-history.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DocumentHistory } from './entities/document-history.entity';
+import { PaginationDto } from 'src/common/dto/pagination-query.dto';
+import { ResultPaginationDTO } from 'src/common/dto/result-pagination.dto';
 
 @Injectable()
 export class DocumentHistoryService {
-  create(createDocumentHistoryDto: CreateDocumentHistoryDto) {
-    return 'This action adds a new documentHistory';
+  constructor(
+    @InjectRepository(DocumentHistory)
+    private readonly historyRepository: Repository<DocumentHistory>,
+  ) { }
+
+  async findAll(paginationDto: PaginationDto) {
+    const { page, limit } = paginationDto;
+    const [data, total] = await this.historyRepository.findAndCount({
+      relations: ['FromUser', 'ToUser'],
+      order: { CreatedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return new ResultPaginationDTO(data, total, page, limit);
   }
 
-  findAll() {
-    return `This action returns all documentHistory`;
+  async findByDocument(documentId: number, paginationDto: PaginationDto) {
+    const { page, limit } = paginationDto;
+    const [data, total] = await this.historyRepository.findAndCount({
+      where: { DocumentId: documentId },
+      relations: ['FromUser', 'ToUser'],
+      order: { CreatedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return new ResultPaginationDTO(data, total, page, limit);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} documentHistory`;
+  async findOne(id: number) {
+    const history = await this.historyRepository.findOne({
+      where: { Id: id },
+      relations: ['FromUser', 'ToUser'],
+    });
+    if (!history) {
+      throw new NotFoundException(`History record with ID ${id} not found`);
+    }
+    return history;
   }
 
-  update(id: number, updateDocumentHistoryDto: UpdateDocumentHistoryDto) {
-    return `This action updates a #${id} documentHistory`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} documentHistory`;
-  }
 }

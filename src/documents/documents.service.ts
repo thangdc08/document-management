@@ -18,6 +18,7 @@ import { FilterDocumentDto } from './dto/filter-document.dto';
 import { DocumentFile } from './entities/document-file.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DocumentWorkflowService } from './workflow/document-workflow.service';
+import { ResultPaginationDTO } from 'src/common/dto/result-pagination.dto';
 
 @Injectable()
 export class DocumentsService {
@@ -110,15 +111,7 @@ export class DocumentsService {
 
     const { data, total } = await this.documentRepository.findAll(filterDto);
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        totalItems: total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return new ResultPaginationDTO(data, total, page, limit);
   }
 
   // Tìm document theo id

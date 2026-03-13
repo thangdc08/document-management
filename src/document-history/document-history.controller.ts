@@ -1,9 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { DocumentHistoryService } from './document-history.service';
-import { CreateDocumentHistoryDto } from './dto/create-document-history.dto';
-import { UpdateDocumentHistoryDto } from './dto/update-document-history.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RequiredPermission } from 'src/auth/decorators/permission.decorator';
+import { PaginationDto } from 'src/common/dto/pagination-query.dto';
 
 @ApiBearerAuth()
 @ApiTags('document-history')
@@ -11,17 +10,21 @@ import { RequiredPermission } from 'src/auth/decorators/permission.decorator';
 export class DocumentHistoryController {
   constructor(private readonly documentHistoryService: DocumentHistoryService) { }
 
-  @Post()
-  @ApiOperation({ summary: 'Tạo lịch sử văn bản mới (Hệ thống tự động dùng)' })
-  create(@Body() createDocumentHistoryDto: CreateDocumentHistoryDto) {
-    return this.documentHistoryService.create(createDocumentHistoryDto);
-  }
-
   @RequiredPermission('HISTORY_VIEW')
   @Get()
   @ApiOperation({ summary: 'Lấy toàn bộ danh sách lịch sử' })
-  findAll() {
-    return this.documentHistoryService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.documentHistoryService.findAll(paginationDto);
+  }
+
+  @RequiredPermission('HISTORY_VIEW')
+  @Get('document/:documentId')
+  @ApiOperation({ summary: 'Lấy lịch sử của một văn bản cụ thể' })
+  findByDocument(
+    @Param('documentId') documentId: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.documentHistoryService.findByDocument(+documentId, paginationDto);
   }
 
   @RequiredPermission('HISTORY_DETAIL')
@@ -31,15 +34,4 @@ export class DocumentHistoryController {
     return this.documentHistoryService.findOne(+id);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Cập nhật bản ghi lịch sử' })
-  update(@Param('id') id: string, @Body() updateDocumentHistoryDto: UpdateDocumentHistoryDto) {
-    return this.documentHistoryService.update(+id, updateDocumentHistoryDto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Xóa bản ghi lịch sử' })
-  remove(@Param('id') id: string) {
-    return this.documentHistoryService.remove(+id);
-  }
 }
