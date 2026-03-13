@@ -10,8 +10,6 @@ import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { DocumentHistoryModule } from './document-history/document-history.module';
-import { WinstonModule } from 'nest-winston';
-import { loggerConfig } from './common/configs/logger.config';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionGuard } from './auth/guards/permission.guard';
 import { CommentsModule } from './comments/comments.module';
@@ -22,7 +20,6 @@ import { CommentsModule } from './comments/comments.module';
       isGlobal: true,
       expandVariables: true,
     }),
-    WinstonModule.forRoot(loggerConfig),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

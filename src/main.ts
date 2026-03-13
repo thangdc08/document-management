@@ -3,14 +3,10 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-import { WinstonModule } from 'nest-winston';
-import { loggerConfig } from './common/configs/logger.config';
 import { setupSwagger } from './common/configs/swagger.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger(loggerConfig),
-  });
+  const app = await NestFactory.create(AppModule);
 
   // Cấu hình Swagger
   setupSwagger(app);
