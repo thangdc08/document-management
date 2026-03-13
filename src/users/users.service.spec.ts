@@ -120,12 +120,11 @@ describe('UsersService', () => {
       expect(result).toBeDefined();
     });
 
-    it('should throw if user not found', async () => {
+    it('should return null if user not found', async () => {
       repository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne(1))
-        .rejects
-        .toThrow(BadRequestException);
+      const result = await service.findOne(1);
+      expect(result).toBeNull();
     });
   });
 
