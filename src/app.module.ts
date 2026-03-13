@@ -14,6 +14,7 @@ import { WinstonModule } from 'nest-winston';
 import { loggerConfig } from './common/configs/logger.config';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionGuard } from './auth/guards/permission.guard';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -40,10 +41,7 @@ import { PermissionGuard } from './auth/guards/permission.guard';
             trustServerCertificate: true, // Set to true for local development
           },
         },
-        logging:
-          configService.get('NODE_ENV') === 'development'
-            ? ['query', 'error']
-            : ['error'],
+        logging: ['error'], // Chỉ log lỗi, tắt hiển thị lệnh SQL
         logger: 'advanced-console',
       }),
     }),
@@ -53,6 +51,7 @@ import { PermissionGuard } from './auth/guards/permission.guard';
     RolesModule,
     PermissionsModule,
     DocumentHistoryModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [

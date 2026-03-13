@@ -42,7 +42,7 @@ export class PermissionGuard implements CanActivate {
 
 
         // Kiểm tra quyền/permission
-        const hasPermission = await this.authService.hasPermission(user.RoleId, requiredPermission);
+        const hasPermission = await this.authService.hasPermission(user?.RoleId, requiredPermission);
 
         if (!hasPermission) {
             throw new ForbiddenException(

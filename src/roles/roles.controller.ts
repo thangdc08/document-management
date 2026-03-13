@@ -71,6 +71,6 @@ export class RolesController {
     @Req() req: any,
     @Body() permissionIds: AssignPermissionsDto,
   ) {
-    return this.rolesService.assignPermissions(req.user.RoleId, permissionIds.permissionIds);
+    return this.rolesService.assignPermissions(req.user?.RoleId, permissionIds.permissionIds);
   }
 }

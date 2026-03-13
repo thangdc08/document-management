@@ -31,7 +31,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    const payload = { sub: user.Id, username: user.Username, role: user.RoleId };
+    const payload = {
+      sub: user.Id,
+      username: user.Username,
+      role: user.RoleId,
+      roleCode: user.role?.Code,
+    };
     return {
       access_token: await this.jwtService.signAsync(payload)
     };
@@ -70,16 +75,17 @@ export class AuthService {
 
 
   async hasPermission(
-    roleId: number,
+    roleCode: string,
     permissionCode: string,
   ): Promise<boolean> {
+    if (!roleCode) return false;
 
     const rolePermissions = await this.rolePermissionRepository.find({
       where: {
-        RoleId: roleId,
+        role: { Code: roleCode },
         IsEnabled: true,
       },
-      relations: ['permission'],
+      relations: ['permission', 'role'],
     });
 
     const permissionCodes = rolePermissions.map(
